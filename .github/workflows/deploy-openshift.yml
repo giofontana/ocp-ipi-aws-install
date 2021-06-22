@@ -2,13 +2,6 @@ name: deploy-openshift
 
 on:
   workflow_dispatch:
-    inputs:
-      aws_access_key_id:
-        description: 'AWS Access Key ID'
-        required: true
-      aws_secret_access_key:
-        description: 'AWS Secret Access Key'
-        required: true
       region:
         description: 'AWS Region to deploy cluster to'
         required: true
@@ -66,8 +59,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: "${{ github.event.inputs.aws_access_key_id }}"
-          aws-secret-access-key: "${{ github.event.inputs.aws_secret_access_key }}"
+          aws-access-key-id: "${{ secrets.AWS_ACCESS_KEY_ID }}"
+          aws-secret-access-key: "${{ secrets.AWS_SECRET_ACCESS_KEY }}"
           aws-region: ${{ github.event.inputs.region }}        
 
       - name: Create SSH key for cluster
