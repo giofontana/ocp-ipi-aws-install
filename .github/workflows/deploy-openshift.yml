@@ -16,14 +16,14 @@ on:
         description: 'AWS Region to deploy cluster to'
         required: true
         default: 'us-east-1'        
-      s3_storage:
-        description: 'S3 storage bucket name to save installation config files'
-        required: true
-        default: 'ocp-s3-storage'
+#      s3_storage:
+#        description: 'S3 storage bucket name to save installation config files'
+#        required: true
+#        default: 'ocp-s3-storage'
       ocpVersion:
-        description: 'OpenShift version to be installed (latest, 4.7.17)'
+        description: 'OpenShift version to be installed (stable, 4.7.17)'
         required: true   
-        default: 'latest'         
+        default: 'stable'         
       baseDomain:
         description: 'Base domain to deploy the cluster'
         required: true       
@@ -58,6 +58,7 @@ jobs:
       hostPrefix: '23'
       cidrClusterNetwork: '10.128.0.0/14'
       serviceNetwork: '172.30.0.0/16'
+      s3_storage: 'ocp-s3-storage'
 
     steps:
       - name: "Checkout ${{ github.ref }}"
@@ -83,12 +84,12 @@ jobs:
           echo " ********************************* \n"
           mkdir -p ./${{ env.lcl_install_dir }}/ssh-keys/
           ssh-keygen -t rsa -b 4096 -q -N "" -f "./${{ env.lcl_install_dir }}/ssh-keys/${{ env.lcl_install_dir }}"
-          aws s3 sync ./${{ env.lcl_install_dir }}/ssh-keys/ s3://${{ github.event.inputs.s3_storage }}/${{ env.lcl_install_dir }}/ssh-keys/
+          aws s3 sync ./${{ env.lcl_install_dir }}/ssh-keys/ s3://${{ env.s3_storage }}/${{ env.lcl_install_dir }}/ssh-keys/
 
       - name: Parameterize install-config.yaml
         shell: bash
         env:
-          s3_config_path: "${{ github.event.inputs.s3_storage }}/ocp-install-configs"
+          s3_config_path: "${{ env.s3_storage }}/ocp-install-configs"
           clusterName: "${{ github.event.inputs.clusterNamePrefix }}-${{ github.run_number }}"
         run: |
           aws s3 cp s3://${{ env.s3_config_path }}/pull-secret.txt ./${{ env.lcl_install_dir }}/pull-secret.txt --region us-east-1 --quiet
@@ -109,7 +110,7 @@ jobs:
           export cidrMachineNetwork=${{ github.event.inputs.cidrMachineNetwork }}
           export serviceNetwork=${{ env.serviceNetwork }}
           envsubst < ./install-configs/install-config-template.yaml > ./${{ env.lcl_install_dir }}/install-config.yaml
-          aws s3 sync ./${{ env.lcl_install_dir }}/ s3://${{ github.event.inputs.s3_storage }}/${{ env.lcl_install_dir }}/
+          aws s3 sync ./${{ env.lcl_install_dir }}/ s3://${{ env.s3_storage }}/${{ env.lcl_install_dir }}/
 
       - name: Download OpenShift installer and update permissions
         shell: bash
@@ -133,14 +134,14 @@ jobs:
         if: github.event.inputs.networkType == 'OVNKubernetes'
         shell: bash
         env:
-          s3_config_path: "${{ github.event.inputs.s3_storage }}/ocp-install-configs"
+          s3_config_path: "${{ env.s3_storage }}/ocp-install-configs"
         run: |
           export hostPrefix=${{ env.hostPrefix }}
           export cidrClusterNetwork=${{ env.cidrClusterNetwork }}
           export serviceNetwork=${{ env.serviceNetwork }}
           export cidrhybridClusterNetwork=${{ secrets.cidrhybridClusterNetwork }}
           envsubst < ./install-configs/cluster-network-03-config-template.yaml > ./${{ env.lcl_install_dir }}/manifests/cluster-network-03-config.yaml
-          aws s3 sync ./${{ env.lcl_install_dir }}/ s3://${{ github.event.inputs.s3_storage }}/${{ env.lcl_install_dir }}/
+          aws s3 sync ./${{ env.lcl_install_dir }}/ s3://${{ env.s3_storage }}/${{ env.lcl_install_dir }}/
           if [ ! -f ./${{ env.lcl_install_dir }}/manifests/cluster-network-03-config.yml ]; then echo "cluster-network-03-config.yaml does not exist." exit 1; else echo "cluster-network-03-config.yaml exists, continuing deployment..."; fi
 
       - name: Create ignition configs
@@ -155,7 +156,7 @@ jobs:
           echo "Deployment ETA ~40 minutes..."
            ./openshift-install --dir=./${{ env.lcl_install_dir }} create cluster --log-level=debug
           echo "Uploading install files to S3 for: ${{ env.lcl_install_dir }}"
-          aws s3 sync ./${{ env.lcl_install_dir }} s3://${{ github.event.inputs.s3_storage }}/${{ env.lcl_install_dir }}
+          aws s3 sync ./${{ env.lcl_install_dir }} s3://${{ env.s3_storage }}/${{ env.lcl_install_dir }}
 
       - name: Remove kubeadmin user
         shell: bash
