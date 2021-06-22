@@ -1,3 +1,6 @@
+# TODOs:
+# 1. Download installer automatically
+
 name: deploy-openshift
 
 on:
@@ -17,6 +20,10 @@ on:
         description: 'S3 storage bucket name to save installation config files'
         required: true
         default: 'ocp-s3-storage'
+      ocpVersion:
+        description: 'OpenShift version to be installed (latest, 4.7.17)'
+        required: true   
+        default: 'latest'         
       baseDomain:
         description: 'Base domain to deploy the cluster'
         required: true       
@@ -37,7 +44,7 @@ on:
         required: true
         default: 'OpenShiftSDN'
       cidrMachineNetwork:
-        description: 'CIDR of Machines Network (ie. 10.0.0.0/16)'
+        description: 'CIDR of Machines Network (10.0.0.0/16)'
         required: true
         default: '10.0.0.0/16'
 
@@ -66,7 +73,7 @@ jobs:
         with:
           aws-access-key-id: "${{ github.event.inputs.aws_access_key_id }}"
           aws-secret-access-key: "${{ github.event.inputs.aws_secret_access_key }}"
-          aws-region: ${{ github.event.inputs.region }}
+          aws-region: ${{ github.event.inputs.region }}        
 
       - name: Create SSH key for cluster
         shell: bash
@@ -106,14 +113,14 @@ jobs:
 
       - name: Download OpenShift installer and update permissions
         shell: bash
-        env:
-          s3_installer_path: "${{ github.event.inputs.s3_storage }}/macos-installer"
         run: |
           mkdir -p ./${{ env.lcl_install_dir }}
           echo "Downloading OpenShift Installer..."
-          aws s3 cp s3://${{ env.s3_installer_path }}/openshift-install ./openshift-install --region us-east-1 --quiet
+          wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${{ ocpVersion }}/openshift-install-mac.tar.gz
+          tar -xvzf openshift-install-mac.tar.gz
           echo "Update permissions to executable on the openshift-installer..."
-          chmod +rwx ./openshift-install
+          chmod +x ./openshift-install
+          ./openshift-install --region us-east-1 --quiet
           echo "OCP_VERSION=$(./openshift-install version | head -n 1)" >> $GITHUB_ENV
 
       - name: Create manifests
