@@ -20,6 +20,10 @@ on:
       clusterConfigName:
         description: 'Name of cluster config in S3 to pull down and destroy'
         required: true
+      ocpVersion:
+        description: 'OpenShift version to be installed (stable, 4.7.17)'
+        required: true   
+        default: 'stable'           
 
 jobs:
   remove-openshift-cluster:
