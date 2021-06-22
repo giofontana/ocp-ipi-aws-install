@@ -78,7 +78,12 @@ jobs:
       - name: Associate SSH key to WMCO
         shell: bash
         run: |
-          oc create secret generic cloud-private-key --from-file=private-key.pem=./${{ env.lcl_install_dir }}/ssh-keys/${{ env.lcl_install_dir }}-wmco -n openshift-windows-machine-config-operator
+          if [ "$(oc get secret cloud-private-key -n openshift-windows-machine-config-operator --ignore-not-found -o name)" = "secret/cloud-private-key" ]; then
+            echo "Secret cloud-private-key already exists"
+          else
+            echo "Creating secret cloud-private-key"
+            oc create secret generic cloud-private-key --from-file=private-key.pem=./${{ env.lcl_install_dir }}/ssh-keys/${{ env.lcl_install_dir }}-wmco -n openshift-windows-machine-config-operator
+          fi
 
       - name: Deploy MachineSet for Windows
         shell: bash
