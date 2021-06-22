@@ -122,7 +122,14 @@ jobs:
           export containerImage=${{ github.event.inputs.containerImage }}
           export id=${{ github.run_number }}
           envsubst < ./crd/windows-container-template.yaml >> ./${{ env.lcl_install_dir }}/windows-container.yaml
-          oc new-project $projectName
+
+          if [ "$(oc get project $projectName -o name)" = "project.project.openshift.io/$projectName" ]; then
+            echo "Project $projectName already exists"
+          else
+            echo "Creating project $projectName"
+            oc new-project $projectName
+          fi
+          
           oc apply -f ./${{ env.lcl_install_dir }}/windows-container.yaml
           export oc_container=$(oc get pods -n windows-workloads -o json | jq -r '.items[0].status.containerStatuses[0].name')
           echo "Waiting for $oc_container to start..."
