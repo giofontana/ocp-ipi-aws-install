@@ -92,7 +92,7 @@ jobs:
           s3_config_path: "${{ env.s3_storage }}/ocp-install-configs"
           clusterName: "${{ github.event.inputs.clusterNamePrefix }}-${{ github.run_number }}"
         run: |
-          aws s3 cp s3://${{ env.s3_config_path }}/pull-secret.txt ./${{ env.lcl_install_dir }}/pull-secret.txt --region us-east-1 --quiet
+          aws s3 cp s3://${{ env.s3_config_path }}/pull-secret.txt ./${{ env.lcl_install_dir }}/pull-secret.txt --region ${{ github.event.inputs.region }} --quiet
           export pullSecret=$(cat "./${{ env.lcl_install_dir }}/pull-secret.txt")
           export sshKey=$(cat "./${{ env.lcl_install_dir }}/ssh-keys/${{ env.lcl_install_dir }}.pub")
           export region=${{ github.event.inputs.region }}
