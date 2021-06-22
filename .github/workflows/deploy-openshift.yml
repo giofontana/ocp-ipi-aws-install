@@ -16,10 +16,10 @@ on:
         description: 'AWS Region to deploy cluster to'
         required: true
         default: 'us-east-1'        
-#      s3_storage:
-#        description: 'S3 storage bucket name to save installation config files'
-#        required: true
-#        default: 'ocp-s3-storage'
+      s3_storage:
+        description: 'S3 storage bucket name to save installation config files'
+        required: true
+        default: 'ocp-s3-storage'
       ocpVersion:
         description: 'OpenShift version to be installed (stable, 4.7.17)'
         required: true   
@@ -43,10 +43,6 @@ on:
         description: 'Network type to deploy for cluster (OpenShiftSDN, OVNKubernetes)'
         required: true
         default: 'OpenShiftSDN'
-      cidrMachineNetwork:
-        description: 'CIDR of Machines Network (10.0.0.0/16)'
-        required: true
-        default: '10.0.0.0/16'
 
 jobs:
   deploy-ocp:
@@ -59,6 +55,7 @@ jobs:
       cidrClusterNetwork: '10.128.0.0/14'
       serviceNetwork: '172.30.0.0/16'
       s3_storage: 'ocp-s3-storage'
+      cidrMachineNetwork: '10.0.0.0/16'
 
     steps:
       - name: "Checkout ${{ github.ref }}"
@@ -107,7 +104,7 @@ jobs:
           export networkType=${{ github.event.inputs.networkType }}
           export clusterName=${{ env.clusterName }}
           export cidrClusterNetwork=${{ env.cidrClusterNetwork }}
-          export cidrMachineNetwork=${{ github.event.inputs.cidrMachineNetwork }}
+          export cidrMachineNetwork=${{ env.cidrMachineNetwork }}
           export serviceNetwork=${{ env.serviceNetwork }}
           envsubst < ./install-configs/install-config-template.yaml > ./${{ env.lcl_install_dir }}/install-config.yaml
           aws s3 sync ./${{ env.lcl_install_dir }}/ s3://${{ env.s3_storage }}/${{ env.lcl_install_dir }}/

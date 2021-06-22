@@ -2,13 +2,13 @@
 
 Example GitHub Actions workflows to:
 
-- Deploy an OpenShift Cluster configured for Windows Containers, including the WMCO, Windows MachineSet and Windows container.
+- Deploy an OpenShift Cluster.
 - Configuring the final leg of the SSL certificate to remove the website warning, using certbot and route53.
 - Removing the kubeadmin user.
 - Removing the OpenShift Cluster from AWS, with the metadata files created during deployment.
 - Force removing the OpenShift Cluster from AWS, without any metadata files.
 
-S3 is used for file storage of the installer (which can be sourced from cloud.redhat.com), along with the pull secret.
+S3 is used for file storage of the pull secret required for installation.
 
 S3 is used to store metadata for each run of the `deploy-openshift` workflow, assuming the installer completes successfully.
 
@@ -18,7 +18,7 @@ This repo is not meant to demonstrate best practices or extensibility.  This rep
 ## Workflows
 ### `deploy-openshift.yml`
 
-- The installer is run in multiple steps to allow for creation of the install-config and the `cluster-network-03-config.yaml` file which is required for windows
+- The installer is run in multiple steps to allow for creation of the `install-config` file.
 
 - SSH keys are generated during each run for both the cluster and the WMCO (Windows Machine Config Operator).  All keys are sent to the S3 storage bucket.
 
