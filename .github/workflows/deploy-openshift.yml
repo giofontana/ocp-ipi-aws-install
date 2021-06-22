@@ -1,5 +1,4 @@
 name: deploy-openshift
-author: Dina 
 
 on:
   workflow_dispatch:
@@ -36,11 +35,11 @@ on:
       networkType:
         description: 'Network type to deploy for cluster (OpenShiftSDN, OVNKubernetes)'
         required: true
-        default: 'OpenShiftSDN'            
+        default: 'OpenShiftSDN'
       cidrMachineNetwork:
-        description: 'CIDR of Machine's Network (ie. 10.0.0.0/16)'
+        description: 'CIDR of Machines Network (ie. 10.0.0.0/16)'
         required: true
-        default: '10.0.0.0/16'    
+        default: '10.0.0.0/16'
 
 jobs:
   deploy-ocp:
