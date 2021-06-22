@@ -13,42 +13,25 @@ S3 is used for file storage of the pull secret required for installation.
 S3 is used to store metadata for each run of the `deploy-openshift` workflow, assuming the installer completes successfully.
 
 **DISCLAIMER**
-This repo is not meant to demonstrate best practices or extensibility.  This repo is meant to show a low barrier to entry for automation in regards to deploying OpenShift with Windows Container support in AWS.
+This repo is not meant to demonstrate best practices or extensibility.  This repo is meant to show a low barrier to entry for automation in regards to deploying OpenShift in AWS.
 
 ## Workflows
 ### `deploy-openshift.yml`
 
 - The installer is run in multiple steps to allow for creation of the `install-config` file.
 
-- SSH keys are generated during each run for both the cluster and the WMCO (Windows Machine Config Operator).  All keys are sent to the S3 storage bucket.
-
-- A Windows MachineSet is deployed using the public AWS ami: `ami-015451c8bbe8e7650`.  This will result in a `Windows_Server-2019-English-Full-ContainersLatest-2021.04.14` host machine.
+- SSH keys are generated during each run for the cluster.  All keys are sent to the S3 storage bucket.
 
 - The OpenShift cluster certificate, by default will encrypt traffic.  However it is not signed by a CA so it will appear insecure in the browser.  If you check the cert on [SSL checker](https://www.sslshopper.com/ssl-checker.html), it will show secure until the very end of the chain by default.  This job will finish securing the certificate by using Let's Encrypt via the route53 plugin.
-
-- A demo IIS container is deployed
 
 #### Requirements for `deploy-openshift.yml`
 
 An AWS S3 Storage bucket with the following:
 
 - S3 bucket with permissions set accordingly
-- The OpenShift installer in a folder called `macos-installer`
 - The _matching_ pull secret for the installer in a folder called `ocp-install-configs`
 
 **The following secrets are set:**
-
-Used to login to AWS:
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-
-Used for OpenShift configuration
-
-- BASEDOMAIN
-    - The base domain, usually your organizations or personal one.  Example: test.mycompany.com
-- CIDRCLUSTERNETWORK
-- CIDRMACHINENETWORK
-- SERVICENETWORK
 
 Used for certificates and tags:
 
