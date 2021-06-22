@@ -1,40 +1,46 @@
 name: deploy-openshift
+author: Dina 
 
 on:
   workflow_dispatch:
     inputs:
+      aws_access_key_id:
+        description: 'AWS Access Key ID'
+        required: true
+      aws_secret_access_key:
+        description: 'AWS Secret Access Key'
+        required: true
+      region:
+        description: 'AWS Region to deploy cluster to'
+        required: true
+        default: 'us-east-1'        
       s3_storage:
-        description: 's3 storage bucket name'
+        description: 'S3 storage bucket name to save installation config files'
         required: true
-        default: 'dina-s3-storage'
+        default: 'ocp-s3-storage'
+      baseDomain:
+        description: 'Base domain to deploy the cluster'
+        required: true       
       clusterNamePrefix:
-        description: 'cluster name prefix will get combined with the github run number'
+        description: 'Cluster name prefix will get combined with the github run number'
         required: true
-        default: 'dina-ocp'
-      replicas:
-        description: 'Replicas to deploy for cluster (used in initial-config)'
+        default: 'ocp'
+      numWorkers:
+        description: 'Number of workers to deploy on the cluster'
         required: true
         default: '3'
-      hostPrefix:
-        description: 'Host prefix to deploy for cluster (used in initial-config)'
+      workersFlavor:
+        description: 'Workers default size'
         required: true
-        default: '23'
+        default: 'm5.xlarge'    
       networkType:
-        description: 'Network type to deploy for cluster (used in initial-config)'
+        description: 'Network type to deploy for cluster (OpenShiftSDN, OVNKubernetes)'
         required: true
-        default: 'OVNKubernetes'
-      region:
-        description: 'AWS Region to deploy cluster to (used in initial-config)'
+        default: 'OpenShiftSDN'            
+      cidrMachineNetwork:
+        description: 'CIDR of Machine's Network (ie. 10.0.0.0/16)'
         required: true
-        default: 'us-east-1'
-      ami:
-        description: 'AWS ami to be used for machineSet. Default: Windows_Server-2019-English-Full-ContainersLatest-2021.04.14'
-        required: true
-        default: 'ami-015451c8bbe8e7650'
-      containerImage:
-        description: 'Container Image to pull from registry'
-        required: true
-        default: 'mcr.microsoft.com/windows/servercore:1809'
+        default: '10.0.0.0/16'    
 
 jobs:
   deploy-ocp:
@@ -42,6 +48,10 @@ jobs:
     env:
       lcl_install_dir: ${{ github.event.inputs.clusterNamePrefix }}-${{ github.run_number }}
       kubeconfig_path: "${{github.workspace}}/${{ github.event.inputs.clusterNamePrefix }}-${{ github.run_number }}/auth/kubeconfig"
+      numMasters: 3
+      hostPrefix: '23'
+      cidrClusterNetwork: '10.128.0.0/14'
+      serviceNetwork: '172.30.0.0/16'
 
     steps:
       - name: "Checkout ${{ github.ref }}"
@@ -54,12 +64,10 @@ jobs:
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
-        env:
-          aws_region: "${{ github.event.inputs.region }}"
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.aws_region }}
+          aws-access-key-id: ${{ github.event.inputs.aws_access_key_id }}
+          aws-secret-access-key: ${{ github.event.inputs.aws_secret_access_key }}
+          aws-region: ${{ github.event.inputs.region }}
 
       - name: Create SSH key for cluster
         shell: bash
@@ -84,14 +92,16 @@ jobs:
           export email=${{ secrets.EMAIL }}
           export delete_by=NEVER
           export always_up=false
-          export baseDomain=${{ secrets.baseDomain }}
-          export replicas=${{ github.event.inputs.replicas }}
+          export baseDomain=${{ github.event.inputs.baseDomain }}
+          export numMasters=${{ env.numMasters }}
+          export numWorkers=${{ github.event.inputs.numWorkers }}
+          export workersFlavor=${{ github.event.inputs.workersFlavor }}
           export hostPrefix=${{ github.event.inputs.hostPrefix }}
           export networkType=${{ github.event.inputs.networkType }}
           export clusterName=${{ env.clusterName }}
-          export cidrClusterNetwork=${{ secrets.cidrClusterNetwork }}
-          export cidrMachineNetwork=${{ secrets.cidrMachineNetwork }}
-          export serviceNetwork=${{ secrets.serviceNetwork }}
+          export cidrClusterNetwork=${{ env.cidrClusterNetwork }}
+          export cidrMachineNetwork=${{ github.event.inputs.cidrMachineNetwork }}
+          export serviceNetwork=${{ env.serviceNetwork }}
           envsubst < ./install-configs/install-config-template.yaml > ./${{ env.lcl_install_dir }}/install-config.yaml
           aws s3 sync ./${{ env.lcl_install_dir }}/ s3://${{ github.event.inputs.s3_storage }}/${{ env.lcl_install_dir }}/
 

@@ -4,14 +4,16 @@ compute:
 - architecture: amd64
   hyperthreading: Enabled
   name: worker
-  platform: {}
-  replicas: ${replicas}
+  platform: 
+    aws:
+      type: ${workersFlavor}
+  replicas: ${numWorkers}
 controlPlane:
   architecture: amd64
   hyperthreading: Enabled
   name: master
   platform: {}
-  replicas: ${replicas}
+  replicas: ${numMasters}
 metadata:
   creationTimestamp: null
   name: ${clusterName}
