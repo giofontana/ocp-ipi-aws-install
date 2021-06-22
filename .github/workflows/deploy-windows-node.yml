@@ -30,7 +30,7 @@ on:
         default: 'mcr.microsoft.com/windows/servercore:1809'
 
 jobs:
-  deploy-ocp:
+  deploy-windows-node:
     runs-on: macos-latest
     env:
       lcl_install_dir: windows-node-deployment-${{ github.run_number }}
