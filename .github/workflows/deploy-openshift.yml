@@ -1,6 +1,3 @@
-# TODOs:
-# 1. Download installer automatically
-
 name: deploy-openshift
 
 on:
@@ -55,7 +52,7 @@ jobs:
       cidrClusterNetwork: '10.128.0.0/14'
       serviceNetwork: '172.30.0.0/16'
       cidrMachineNetwork: '10.0.0.0/16'
-      cidrhybridClusterNetwork: ' 10.132.0.0/14'    
+      cidrhybridClusterNetwork: '10.132.0.0/14'    
 
     steps:
       - name: "Checkout ${{ github.ref }}"
