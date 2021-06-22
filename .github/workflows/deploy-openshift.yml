@@ -115,10 +115,9 @@ jobs:
       - name: Download OpenShift installer and update permissions
         shell: bash
         run: |
-          export ocp_installer_url="https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${{ ocpVersion }}/openshift-install-mac.tar.gz"
           mkdir -p ./${{ env.lcl_install_dir }}
           echo "Downloading OpenShift Installer..."
-          wget $ocp_installer_url
+          wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${{ github.event.inputs.ocpVersion }}/openshift-install-mac.tar.gz
           tar -xvzf openshift-install-mac.tar.gz
           echo "Update permissions to executable on the openshift-installer..."
           chmod +x ./openshift-install
