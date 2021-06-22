@@ -1,4 +1,4 @@
-name: deploy-openshift
+name: deploy-windows-node
 
 on:
   workflow_dispatch:
