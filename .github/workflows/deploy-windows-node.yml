@@ -34,7 +34,6 @@ jobs:
     runs-on: macos-latest
     env:
       lcl_install_dir: windows-node-deployment-${{ github.run_number }}
-      kubeconfig_path: "${{github.workspace}}/windows-node-deployment-${{ github.run_number }}/auth/kubeconfig"
 
     steps:
       - name: "Checkout ${{ github.ref }}"
@@ -70,9 +69,9 @@ jobs:
       - name: Install WMCO
         shell: bash
         run: |
-          oc create -f ./crd/wmco-namespace.yaml
-          oc create -f ./crd/wmco-og.yaml
-          oc create -f ./crd/wmco-sub.yaml
+          oc apply -f ./crd/wmco-namespace.yaml
+          oc apply -f ./crd/wmco-og.yaml
+          oc apply -f ./crd/wmco-sub.yaml
           echo "verifying the WMCO installation:"
           oc get csv -n openshift-windows-machine-config-operator
 
@@ -92,7 +91,7 @@ jobs:
           export delete_by=NEVER
           export always_up=false
           envsubst < ./crd/aws-machineset-win-template.yaml >> ./${{ env.lcl_install_dir }}/aws-machineset-win.yaml
-          oc create -f ./${{ env.lcl_install_dir }}/aws-machineset-win.yaml
+          oc apply -f ./${{ env.lcl_install_dir }}/aws-machineset-win.yaml
           aws s3 sync ./${{ env.lcl_install_dir }}/ s3://${{ github.event.inputs.s3_storage }}/${{ env.lcl_install_dir }}/
           echo "Waiting for Windows MachineSet to become Available..."
           until oc get machineset ${infrastructure_id}-windows-worker-${zone} -n openshift-machine-api -o json | jq -e '(.status.availableReplicas == 1)' | grep -m 1 'true'; do sleep 2; done
@@ -106,7 +105,7 @@ jobs:
           export id=${{ github.run_number }}
           envsubst < ./crd/prepull-image-template.yaml >> ./${{ env.lcl_install_dir }}/prepull-image.yaml
           oc project openshift-windows-machine-config-operator
-          oc create -f ./${{ env.lcl_install_dir }}/prepull-image.yaml
+          oc apply -f ./${{ env.lcl_install_dir }}/prepull-image.yaml
           echo "Waiting for Windows image pull to complete..."
           oc wait --for=condition=complete --timeout=900s job/pre-pull-windows-image-${{ github.run_number }}
 
@@ -119,7 +118,7 @@ jobs:
           export id=${{ github.run_number }}
           envsubst < ./crd/windows-container-template.yaml >> ./${{ env.lcl_install_dir }}/windows-container.yaml
           oc new-project $projectName
-          oc create -f ./${{ env.lcl_install_dir }}/windows-container.yaml
+          oc apply -f ./${{ env.lcl_install_dir }}/windows-container.yaml
           export oc_container=$(oc get pods -n windows-workloads -o json | jq -r '.items[0].status.containerStatuses[0].name')
           echo "Waiting for $oc_container to start..."
           until oc get pods -n $projectName -o json | jq -e '(.items[0].status.containerStatuses[0].started == true)' | grep -m 1 'true'; do sleep 2; done
