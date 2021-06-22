@@ -135,7 +135,7 @@ jobs:
           export hostPrefix=${{ env.hostPrefix }}
           export cidrClusterNetwork=${{ env.cidrClusterNetwork }}
           export serviceNetwork=${{ env.serviceNetwork }}
-          export cidrhybridClusterNetwork=${{ secrets.cidrhybridClusterNetwork }}
+          export cidrhybridClusterNetwork=${{ env.cidrhybridClusterNetwork }}
           envsubst < ./install-configs/cluster-network-03-config-template.yaml > ./${{ env.lcl_install_dir }}/manifests/cluster-network-03-config.yaml
           aws s3 sync ./${{ env.lcl_install_dir }}/ s3://${{ github.event.inputs.s3_storage }}/${{ env.lcl_install_dir }}/
           if [ ! -f ./${{ env.lcl_install_dir }}/manifests/cluster-network-03-config.yml ]; then echo "cluster-network-03-config.yaml does not exist." exit 1; else echo "cluster-network-03-config.yaml exists, continuing deployment..."; fi
