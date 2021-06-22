@@ -117,11 +117,10 @@ jobs:
         run: |
           mkdir -p ./${{ env.lcl_install_dir }}
           echo "Downloading OpenShift Installer..."
-          wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${{ github.event.inputs.ocpVersion }}/openshift-install-mac.tar.gz
+          wget -q https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${{ github.event.inputs.ocpVersion }}/openshift-install-mac.tar.gz
           tar -xvzf openshift-install-mac.tar.gz
           echo "Update permissions to executable on the openshift-installer..."
           chmod +x ./openshift-install
-          ./openshift-install --region us-east-1 --quiet
           echo "OCP_VERSION=$(./openshift-install version | head -n 1)" >> $GITHUB_ENV
 
       - name: Create manifests
