@@ -3,10 +3,6 @@ name: remove-cluster
 on:
   workflow_dispatch:
     inputs:
-      s3_storage:
-        description: 'Name AWS S3 storage bucket'
-        required: true
-        default: 'ocp-s3-storage'
       aws_access_key_id:
         description: 'AWS Access Key ID'
         required: true
@@ -17,18 +13,19 @@ on:
         description: 'AWS Region to deploy cluster to'
         required: true
         default: 'us-east-1'          
+      s3_storage:
+        description: 'Name AWS S3 storage bucket'
+        required: true
+        default: 'ocp-s3-storage'        
       clusterConfigName:
         description: 'Name of cluster config in S3 to pull down and destroy'
-        required: true
-      ocpVersion:
-        description: 'OpenShift version to be installed (stable, 4.7.17)'
-        required: true   
-        default: 'stable'           
+        required: true         
 
 jobs:
   remove-openshift-cluster:
     runs-on: macos-latest
     env:
+      ocpVersion: 'stable'
       temp_dir: "temp-${{ github.run_number }}"
     steps:
       - name: "Checkout ${{ github.ref }}"
@@ -51,7 +48,7 @@ jobs:
         run: |
           mkdir -p ./${{ env.lcl_install_dir }}
           echo "Downloading OpenShift Installer..."
-          wget -q https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${{ github.event.inputs.ocpVersion }}/openshift-install-mac.tar.gz
+          wget -q https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${{ env.ocpVersion }}/openshift-install-mac.tar.gz
           tar -xvzf openshift-install-mac.tar.gz
           echo "Update permissions to executable on the openshift-installer..."
           chmod +x ./openshift-install
