@@ -33,14 +33,19 @@ An AWS S3 Storage bucket with the following:
 
 **The following secrets are set:**
 
-Used for certificates and tags:
+_Used to login to AWS:_
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
 
+_Used for certificate configuration_
 - EMAIL
 
-Used for OCP configuration(s) post deployment:
-
+_Used for oc login to apply certs_:
 - OC_USER
 - OC_PASSWORD
+
+_Used for OpenShift deployment_:
+- PULL_SECRET
 
 ### `configure-ssl-cert.yml`
 
@@ -62,13 +67,12 @@ _Used to login to AWS:_
 - AWS_SECRET_ACCESS_KEY
 
 _Used for certificate configuration_
-- BASEDOMAIN
-    - The base domain, usually your organizations or personal one.  Example: test.mycompany.com
 - EMAIL
 
 _Used for oc login to apply certs_:
 - OC_USER
 - OC_PASSWORD
+
 ### `remove-kubeadmin-user`
 
 Removes the kubeadmin user, sets htpasswd as oauth and uses the OC_USER and OC_PASSWORD secrets to configure a new user.
