@@ -106,7 +106,22 @@ jobs:
           oc project openshift-windows-machine-config-operator
           oc apply -f ./${{ env.lcl_install_dir }}/prepull-image.yaml
           echo "Waiting for Windows image pull to complete..."
-          oc wait --for=condition=complete --timeout=900s job/pre-pull-windows-image-${{ github.run_number }}
+          
+          TIMEOUT=0
+          oc wait --for=condition=complete --timeout=300s job/pre-pull-windows-image-${{ github.run_number }}
+          RESULT=$?
+          while [ $RESULT -ne 0 ]; do
+            echo "Windows image pull haven't finished... trying again!"
+            oc delete pods -l job-name=pre-pull-windows-image-${{ github.run_number }} -n openshift-windows-machine-config-operator
+            oc wait --for=condition=complete --timeout=300s job/pre-pull-windows-image-${{ github.run_number }}
+            RESULT=$?
+
+            TIMEOUT=$(($TIMEOUT+1))
+            if [ $TIMEOUT -eq 4 ]; then
+              echo "Windows image pull haven't finished successfully. Exiting..."
+              exit 1
+            fi
+          done
 
       - name: Deploy Windows container
         shell: bash
