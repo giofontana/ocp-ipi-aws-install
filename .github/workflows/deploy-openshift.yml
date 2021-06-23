@@ -80,7 +80,7 @@ jobs:
           s3_config_path: "${{ github.event.inputs.s3_storage }}/ocp-install-configs"
           clusterName: "${{ github.event.inputs.clusterNamePrefix }}-${{ github.run_number }}"
         run: |
-          export pullSecret=${{ secrets.PULL_SECRET }}
+          export pullSecret='${{ secrets.PULL_SECRET }}'
           export sshKey=$(cat "./${{ env.lcl_install_dir }}/ssh-keys/${{ env.lcl_install_dir }}.pub")
           export region=${{ github.event.inputs.region }}
           export email=${{ secrets.EMAIL }}
