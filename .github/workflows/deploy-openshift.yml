@@ -2,6 +2,7 @@ name: deploy-openshift
 
 on:
   workflow_dispatch:
+    inputs:  
       region:
         description: 'AWS Region to deploy cluster to'
         required: true
