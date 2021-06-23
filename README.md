@@ -26,10 +26,7 @@ This repo is not meant to demonstrate best practices or extensibility.  This rep
 
 #### Requirements for `deploy-openshift.yml`
 
-An AWS S3 Storage bucket with the following:
-
-- S3 bucket with permissions set accordingly
-- The _matching_ pull secret for the installer in a folder called `ocp-install-configs`
+An AWS account which has permission to create a S3 Storage bucket with will be used to store the files created during the installation. This github action will create this bucket automatically using the AWS Access Key set on the repository secrets.
 
 **The following secrets are set:**
 
