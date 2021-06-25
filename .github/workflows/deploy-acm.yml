@@ -37,12 +37,23 @@ jobs:
           oc apply -f ./crd/acm/acm-og.yaml
           oc apply -f ./crd/acm/acm-sub.yaml
 
-          sleep 120 # WAITING 2 MINUTES FOR OPERATOR DEPLOYMENT          
-
-          echo "verifying the ACM installation:"
           oc project openshift-advanced-cluster-mgmt
-          oc get csv -n openshift-advanced-cluster-mgmt
-        
+          TIMEOUT=0 
+          acm_subs_status=$(oc get csv -n openshift-advanced-cluster-mgmt -o jsonpath='{.items[0].status.phase}')
+          while [ "$acm_subs_status" != "Succeeded" ]; do
+            echo "ACM operator still being deployed. Waiting one more minute..."
+            sleep 60
+
+            if [ $TIMEOUT -gt 15 ]; then #15 MINUTES TIMEOUT
+              echo "Timeout reached... Check the status of ACM deployment on OpenShift."
+              exit 1
+            fi
+            TIMEOUT=$(($TIMEOUT+1))
+            acm_subs_status=$(oc get csv -n openshift-advanced-cluster-mgmt -o jsonpath='{.items[0].status.phase}')
+          done
+          
+          echo "ACM Operator Deployment Finished"
+
       - name: Creating Pull-secret on ACM namespace
         shell: bash
         run: |
