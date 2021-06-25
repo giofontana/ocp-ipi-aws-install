@@ -67,7 +67,7 @@ jobs:
 
             if [ $TIMEOUT -gt 15 ]; then #15 MINUTES TIMEOUT
               echo "Timeout reached... Check the status of ACM deployment on OpenShift."
-#              exit 1
+              exit 1
             fi
             TIMEOUT=$(($TIMEOUT+1))
             mch_status=$(oc get MultiClusterHub multiclusterhub -n openshift-advanced-cluster-mgmt -o jsonpath='{.status.phase}')
