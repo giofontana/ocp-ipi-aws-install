@@ -37,6 +37,7 @@ jobs:
           oc apply -f ./crd/acm/acm-og.yaml
           oc apply -f ./crd/acm/acm-sub.yaml
 
+          sleep 60
           oc project openshift-advanced-cluster-mgmt
           TIMEOUT=0 
           acm_subs_status=$(oc get csv -n openshift-advanced-cluster-mgmt -o jsonpath='{.items[0].status.phase}')
