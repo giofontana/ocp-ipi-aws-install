@@ -39,6 +39,7 @@ jobs:
           echo "verifying the ACM installation:"
           oc project openshift-advanced-cluster-mgmt
           oc get csv -n openshift-advanced-cluster-mgmt
+          sleep 120 # WAITING 2 MINUTES FOR OPERATOR DEPLOYMENT
 
       - name: Creating Pull-secret on ACM namespace
         shell: bash
@@ -50,6 +51,7 @@ jobs:
         shell: bash
         run: |
           oc apply -f ./crd/acm/acm-mch.yml
+          sleep 120
 
       - name: Verify ACM status
         shell: bash
