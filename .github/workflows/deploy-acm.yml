@@ -36,9 +36,10 @@ jobs:
           oc apply -f ./crd/acm/acm-namespace.yaml
           oc apply -f ./crd/acm/acm-og.yaml
           oc apply -f ./crd/acm/acm-sub.yaml
-          echo "verifying the ACM installation:"
-          sleep 120 # WAITING 2 MINUTES FOR OPERATOR DEPLOYMENT
 
+          sleep 120 # WAITING 2 MINUTES FOR OPERATOR DEPLOYMENT          
+
+          echo "verifying the ACM installation:"
           oc project openshift-advanced-cluster-mgmt
           oc get csv -n openshift-advanced-cluster-mgmt
         
@@ -58,18 +59,18 @@ jobs:
         shell: bash
         run: |
           TIMEOUT=0 
-          pods=$(oc get pods -n openshift-advanced-cluster-mgmt --no-headers | grep -v 'Running')
-          while [ ! -z "$pods" ]; do
+
+          mch_status=$(oc get MultiClusterHub multiclusterhub -o jsonpath='{.status.phase}'); 
+          while [ "$mch_status" != "Running" ]; do                                                                                                    1 ✘ │ 04:09:11 PM  
             echo "Pods are still being deployed. Waiting one more minute..."
             sleep 60
 
-            if [ "$TIMEOUT" -eq 15 ]; then #15 MINUTES TIMEOUT
+            if [ $TIMEOUT -gt 15 ]; then #15 MINUTES TIMEOUT
               echo "Timeout reached... Check the status of ACM deployment on OpenShift."
               exit 1
             fi
-
             TIMEOUT=$(($TIMEOUT+1))
-            pods=$(oc get pods -n openshift-advanced-cluster-mgmt --no-headers | grep -v 'Running')
+            mch_status=$(oc get MultiClusterHub multiclusterhub -o jsonpath='{.status.phase}'); 
           done
           
           echo "ACM Deployment Finished!"
