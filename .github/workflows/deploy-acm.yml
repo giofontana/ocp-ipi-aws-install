@@ -8,7 +8,7 @@ on:
         required: true
 
 jobs:
-  deploy-windows-node:
+  deploy-acm:
     runs-on: macos-latest
     env:
       lcl_install_dir: windows-node-deployment-${{ github.run_number }}
@@ -37,10 +37,11 @@ jobs:
           oc apply -f ./crd/acm/acm-og.yaml
           oc apply -f ./crd/acm/acm-sub.yaml
           echo "verifying the ACM installation:"
-          oc project openshift-advanced-cluster-mgmt
-          oc get csv -n openshift-advanced-cluster-mgmt
           sleep 120 # WAITING 2 MINUTES FOR OPERATOR DEPLOYMENT
 
+          oc project openshift-advanced-cluster-mgmt
+          oc get csv -n openshift-advanced-cluster-mgmt
+        
       - name: Creating Pull-secret on ACM namespace
         shell: bash
         run: |
@@ -51,7 +52,7 @@ jobs:
         shell: bash
         run: |
           oc apply -f ./crd/acm/acm-mch.yml
-          sleep 120
+          sleep 120 # WAITING 2 MINUTES FOR MCH DEPLOYMENT
 
       - name: Verify ACM status
         shell: bash
